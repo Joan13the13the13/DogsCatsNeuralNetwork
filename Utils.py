@@ -1,6 +1,47 @@
 import cv2
 import os
+import pandas as pd
+import csv
 
+breeds = {
+    'Abyssinian': 1,
+    'american_bulldog': 2,
+    'american_pit_bull_terrier': 3,
+    'basset_hound': 4,
+    'beagle': 5,
+    'Bengal': 6,
+    'Birman': 7,
+    'Bombay': 8,
+    'boxer': 9,
+    'British_Shorthair': 10,
+    'chihuahua': 11,
+    'Egyptian_Mau': 12,
+    'english_cocker_spaniel': 13,
+    'english_setter': 14,
+    'german_shorthaired': 15,
+    'great_pyrenees': 16,
+    'havanese': 17,
+    'japanese_chin': 18,
+    'keeshond': 19,
+    'leonberger': 20,
+    'Maine_Coon': 21,
+    'miniature_pinscher': 22,
+    'newfoundland': 23,
+    'Persian': 24,
+    'pomeranian': 25,
+    'pug': 26,
+    'Ragdoll': 27,
+    'Russian_Blue': 28,
+    'saint_bernard': 29,
+    'samoyed': 30,
+    'scottish_terrier': 31,
+    'shiba_inu': 32,
+    'Siamese': 33,
+    'Sphynx': 34,
+    'staffordshire_bull_terrier': 35,
+    'wheaten_terrier': 36,
+    'yorkshire_terrier': 37
+}
 def get_min_dimensions(folder_path):
     min_width = float('inf')
     min_height = float('inf')
@@ -17,3 +58,58 @@ def get_min_dimensions(folder_path):
                 print(f"Error processing {filename}: {e}")
 
     return min_width, min_height
+
+def check_duplicates(csv_path):
+    # Set to store existing ids for duplicate check
+    existing_ids = set()
+
+    # List to store duplicate ids
+    duplicate_ids = []
+
+    # Read existing CSV file
+    with open(csv_path, 'r') as csv_file:
+        reader = csv.DictReader(csv_file)
+        for row in reader:
+            id_value = row['id']
+            if id_value in existing_ids:
+                duplicate_ids.append(id_value)
+            else:
+                existing_ids.add(id_value)
+
+    return duplicate_ids
+
+def remove_duplicates(input_csv_path, output_csv_path):
+    # Read the CSV file into a pandas DataFrame
+    df = pd.read_csv(input_csv_path)
+
+    # Drop duplicate rows based on all columns
+    df_unique = df.drop_duplicates()
+
+    # Write the unique rows to a new CSV file
+    df_unique.to_csv(output_csv_path, index=False)
+
+def extract_breed(value):
+    # Split by underscores, join all parts except the last one, and remove the trailing number
+    parts = value.split('_')
+    return '_'.join(parts[:-1])
+
+def process_file(file_path, output_csv):
+    # Extract filename without extension
+    filename = os.path.splitext(os.path.basename(file_path))[0]
+
+    # Initialize default values
+    id_value = filename
+    class_value = breeds.get(extract_breed(id_value))
+    species_value = 1 if filename[0].isupper() else 2
+
+
+    # Write to CSV
+    with open(output_csv, mode='a', newline='') as csv_file:
+        fieldnames = ['id', 'class', 'species']
+        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+
+        # Write header only if the file is empty
+        if os.stat(output_csv).st_size == 0:
+            writer.writeheader()
+
+        writer.writerow({'id': id_value, 'class': class_value, 'species': species_value})
