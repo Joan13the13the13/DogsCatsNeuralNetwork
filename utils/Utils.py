@@ -113,3 +113,18 @@ def process_file(file_path, output_csv):
             writer.writeheader()
 
         writer.writerow({'id': id_value, 'class': class_value, 'species': species_value})
+
+
+
+def extractValue(csv,filename,column,train=True):
+    folder_path = 'data/train/' if train else 'data/test/'
+
+    matching_row = csv.loc[csv['id'] == filename]
+
+    # Check if a matching row is found
+    if not matching_row.empty:
+        value = matching_row[column].item()
+        return value
+    else:
+        # Handle the case where no matching row is found
+        return None
