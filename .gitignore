@@ -5,3 +5,4 @@ annotations/
 __pycache__/
 .ipynb_checkpoints/
 backup/
+*.pth

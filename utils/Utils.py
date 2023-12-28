@@ -2,6 +2,9 @@ import cv2
 import os
 import pandas as pd
 import csv
+import torch
+import torch.nn.functional as F
+
 
 breeds = {
     'Abyssinian': 1,
@@ -128,3 +131,53 @@ def extractValue(csv,filename,column,train=True):
     else:
         # Handle the case where no matching row is found
         return None
+
+"""
+Train function: allows to train a determined model with specified parameters
+Args: takes a model, device, train data loader, optimizer and current epoch
+"""
+def train(model, device, train_loader, optimizer):
+    model.train()
+
+    loss_v = 0
+
+    for batch_idx, (data, target) in enumerate(train_loader):
+    
+        data, target = data.to(device), target.to(device)
+        optimizer.zero_grad()
+        output = model(data)
+        output = torch.squeeze(output)
+        loss=F.cross_entropy(output, target, reduction='mean')
+        loss.backward()
+        optimizer.step() 
+        loss_v += loss.item()
+
+    loss_v /= len(train_loader.dataset)
+ 
+    return loss_v
+
+
+"""
+Test function: allows to test a model with specified parameters.
+"""
+def test(model, device, test_loader):
+    model.eval()
+    test_loss = 0
+    correct = 0
+    with torch.no_grad():
+        for data, target in test_loader:
+            data, target = data.to(device), target.to(device)
+            output = model(data)
+            output = torch.squeeze(output)
+            test_loss += F.cross_entropy(output, target, reduction='mean') 
+            pred = output.argmax(dim=1, keepdim=True)  # get the index of the max probability
+            correct += pred.eq(target.view_as(pred)).sum().item()
+
+    test_loss /= len(test_loader.dataset)
+
+    accuracy = 100. * correct / len(test_loader.dataset)
+    
+    print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.2f}%)\n'.format(
+        test_loss, correct, len(test_loader.dataset), accuracy))
+    
+    return test_loss
