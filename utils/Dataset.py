@@ -11,12 +11,13 @@ class Dataset:
     TRAIN_PATH = 'data/train/'
     TEST_PATH = 'data/test/'
 
-    def __init__(self, size=224):
+    def __init__(self,column_name,size=227):
         self.train = []
         self.test = []
+        self.column=column_name
         self.transform = transforms.Compose([
             transforms.ToTensor(),
-            transforms.Resize((227, 227), antialias=True),
+            transforms.Resize((size, size), antialias=True),
         ])
 
         df = pd.read_csv('data/y_train.csv')
@@ -27,7 +28,7 @@ class Dataset:
             if img is not None:
                 img = self.transform(img)
                 filename = os.path.splitext(file)[0]
-                label = extractValue(df, filename, 'species', True)
+                label = extractValue(df, filename, self.column)
                 self.train.append((img, label))
 
         df = pd.read_csv("data/y_test.csv")
@@ -37,7 +38,7 @@ class Dataset:
             if img is not None:
                 img = self.transform(img)
                 filename = os.path.splitext(file)[0]
-                label = extractValue(df, filename, 'species', True)
+                label = extractValue(df, filename, self.column)
                 self.test.append((img, label))
 
         print('Data loaded succesfully!')

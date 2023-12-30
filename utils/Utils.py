@@ -5,46 +5,54 @@ import csv
 import torch
 import torch.nn.functional as F
 
-
+"""
+Breeds dict: assigns unique identifier to each class.
+"""
 breeds = {
-    'Abyssinian': 1,
-    'american_bulldog': 2,
-    'american_pit_bull_terrier': 3,
-    'basset_hound': 4,
-    'beagle': 5,
-    'Bengal': 6,
-    'Birman': 7,
-    'Bombay': 8,
-    'boxer': 9,
-    'British_Shorthair': 10,
-    'chihuahua': 11,
-    'Egyptian_Mau': 12,
-    'english_cocker_spaniel': 13,
-    'english_setter': 14,
-    'german_shorthaired': 15,
-    'great_pyrenees': 16,
-    'havanese': 17,
-    'japanese_chin': 18,
-    'keeshond': 19,
-    'leonberger': 20,
-    'Maine_Coon': 21,
-    'miniature_pinscher': 22,
-    'newfoundland': 23,
-    'Persian': 24,
-    'pomeranian': 25,
-    'pug': 26,
-    'Ragdoll': 27,
-    'Russian_Blue': 28,
-    'saint_bernard': 29,
-    'samoyed': 30,
-    'scottish_terrier': 31,
-    'shiba_inu': 32,
-    'Siamese': 33,
-    'Sphynx': 34,
-    'staffordshire_bull_terrier': 35,
-    'wheaten_terrier': 36,
-    'yorkshire_terrier': 37
+    'Abyssinian': 0,
+    'american_bulldog': 1,
+    'american_pit_bull_terrier': 2,
+    'basset_hound': 3,
+    'beagle': 4,
+    'Bengal': 5,
+    'Birman': 6,
+    'Bombay': 7,
+    'boxer': 8,
+    'British_Shorthair': 9,
+    'chihuahua': 10,
+    'Egyptian_Mau': 11,
+    'english_cocker_spaniel': 12,
+    'english_setter': 13,
+    'german_shorthaired': 14,
+    'great_pyrenees': 15,
+    'havanese': 16,
+    'japanese_chin': 17,
+    'keeshond': 18,
+    'leonberger': 19,
+    'Maine_Coon': 20,
+    'miniature_pinscher': 21,
+    'newfoundland': 22,
+    'Persian': 23,
+    'pomeranian': 24,
+    'pug': 25,
+    'Ragdoll': 26,
+    'Russian_Blue': 27,
+    'saint_bernard': 28,
+    'samoyed': 29,
+    'scottish_terrier': 30,
+    'shiba_inu': 31,
+    'Siamese': 32,
+    'Sphynx': 33,
+    'staffordshire_bull_terrier': 34,
+    'wheaten_terrier': 35,
+    'yorkshire_terrier': 36
 }
+
+"""
+Get_min_dimensions: gets minimum height and width from a specified path.
+Args: folder_path
+Returns: minimum width,height
+"""
 def get_min_dimensions(folder_path):
     min_width = float('inf')
     min_height = float('inf')
@@ -62,10 +70,13 @@ def get_min_dimensions(folder_path):
 
     return min_width, min_height
 
+"""
+Check_duplicates: allos to find duplicates in csv given it's path.
+Args: csv_path
+Returns: duplicated ids list.
+"""
 def check_duplicates(csv_path):
-    # Set to store existing ids for duplicate check
     existing_ids = set()
-
     # List to store duplicate ids
     duplicate_ids = []
 
@@ -80,7 +91,12 @@ def check_duplicates(csv_path):
                 existing_ids.add(id_value)
 
     return duplicate_ids
-
+"""
+Remove_duplicates: function that allows to remove duplicates from a given input csv path.
+Then writes it's new content into another path. Can overwrite the same file.
+Args: input_csv_path,output_csv_path
+Returns: None, writes new content to output_csv path.
+"""
 def remove_duplicates(input_csv_path, output_csv_path):
     # Read the CSV file into a pandas DataFrame
     df = pd.read_csv(input_csv_path)
@@ -91,11 +107,23 @@ def remove_duplicates(input_csv_path, output_csv_path):
     # Write the unique rows to a new CSV file
     df_unique.to_csv(output_csv_path, index=False)
 
+"""
+Extract_breed: extracts breed from a given filename.
+Args: gets filename string.
+Returns: breed name without underscores or numbers.
+"""
 def extract_breed(value):
     # Split by underscores, join all parts except the last one, and remove the trailing number
     parts = value.split('_')
     return '_'.join(parts[:-1])
 
+"""
+Process_file: given a file path, extract filename and then it's breed.
+After that, get each breed id and 0,1 if cat/dog (cat filenames start with capital letter).
+We finally write down that as a row in output csv.
+Args: file_path, output_csv
+Returns: None, writes down a row in given csv path.
+"""
 def process_file(file_path, output_csv):
     # Extract filename without extension
     filename = os.path.splitext(os.path.basename(file_path))[0]
@@ -118,10 +146,18 @@ def process_file(file_path, output_csv):
         writer.writerow({'id': id_value, 'class': class_value, 'species': species_value})
 
 
+"""
+ExtractValue function: allows to extract a determined column from a row in 
+.csv that matches given filename. 
 
-def extractValue(csv,filename,column,train=True):
-    folder_path = 'data/train/' if train else 'data/test/'
+Usage example: 
 
+    extractValue("y_train.csv",'Abyss','weight')
+    
+This sentence would extract weight column from y_train.csv that
+has column id='Abyss'.
+"""
+def extractValue(csv,filename,column):
     matching_row = csv.loc[csv['id'] == filename]
 
     # Check if a matching row is found
@@ -133,8 +169,9 @@ def extractValue(csv,filename,column,train=True):
         return None
 
 """
-Train function: allows to train a determined model with specified parameters
-Args: takes a model, device, train data loader, optimizer and current epoch
+Train function: allows to train a determined model with specified parameters.
+Args: takes a model, device, train data loader and optimizer.
+Returns: whole epoch loss
 """
 def train(model, device, train_loader, optimizer):
     model.train()
@@ -159,6 +196,8 @@ def train(model, device, train_loader, optimizer):
 
 """
 Test function: allows to test a model with specified parameters.
+Args: model,device and test_loader.
+Returns: whole epoch loss
 """
 def test(model, device, test_loader):
     model.eval()
