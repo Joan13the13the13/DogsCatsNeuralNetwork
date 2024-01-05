@@ -1,4 +1,4 @@
 # models/__init__.py
 from .binaryAlexNet import BinaryAlexNet
-from .AdroBalaNet import AdroBalaNet
+from .binaryAdroBalaNet import BinaryAdroBalaNet
 from .multiAlexNet import MultiAlexNet

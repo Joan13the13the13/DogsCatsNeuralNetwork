@@ -18,6 +18,7 @@ class Dataset:
         self.transform = transforms.Compose([
             transforms.ToTensor(),
             transforms.Resize((size, size), antialias=True),
+            transforms.Normalize([0.485, 0.456, 0.406],[0.229, 0.224, 0.225])
         ])
 
         df = pd.read_csv('data/y_train.csv')
